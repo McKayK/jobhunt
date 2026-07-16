@@ -1,0 +1,15 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+requests==2.32.3
+pydantic==2.10.4
+zipcodes==1.2.0
+
+# Deps for python-jobspy (installed separately with --no-deps, see README).
+# jobspy pins numpy==1.26.3 which has no wheels for Python 3.13+, but it
+# runs fine on numpy 2.x, so we install compatible versions ourselves.
+numpy>=2.1
+pandas>=2.2.3,<3
+beautifulsoup4>=4.12.2,<5
+markdownify>=0.13.1,<0.14
+regex>=2024.4.28,<2025
+tls-client>=1.0.1,<2

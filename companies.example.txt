@@ -1,0 +1,101 @@
+# One company per line:  Name | careers URL (URL optional but improves detection)
+# Lines starting with # are ignored.
+#
+# Silicon Slopes / Utah County starters — verify each against your own list.
+Qualtrics | https://www.qualtrics.com/careers/
+Podium | https://www.podium.com/careers/
+Weave | https://www.getweave.com/careers/
+Lucid Software | https://lucid.co/careers
+Domo | https://www.domo.com/company/careers
+Pluralsight | https://www.pluralsight.com/careers
+Nav | https://www.nav.com/careers/
+Divvy | https://getdivvy.com/careers/
+Route | https://route.com/careers/
+MX | https://www.mx.com/careers/
+Recursion | https://www.recursion.com/careers
+Instructure | https://www.instructure.com/careers
+BambooHR | https://www.bamboohr.com/careers/
+Vivint | https://careers.vivint.com/
+Ancestry | https://www.ancestry.com/careers/
+Waystar | https://careers.waystar.com/jobs/
+GC Ai | https://gc.ai/company/careers#openings
+Entrata | https://jobs.lever.co/entrata
+Cornerstone AV | https://cornerstoneav.com/en/careers
+Ebay | https://jobs.ebayinc.com/us/en/jobs-in-utah
+Awardco | https://www.awardco.com/careers#job-openings
+Trove | https://trovebrands.com/pages/careers
+Adobe | https://careers.adobe.com/
+BambooHR | https://www.bamboohr.com/careers/
+Podium | https://www.podium.com/careers/
+Entrata | https://www.entrata.com/careers
+Qualtrics | https://www.qualtrics.com/careers/
+Domo | https://www.domo.com/company/careers
+Vivint | https://www.vivint.com/company/careers
+Route | https://route.com/careers
+Ancestry | https://careers.ancestry.com/
+Weave | https://www.getweave.com/careers/
+MX Technologies | https://www.mx.com/careers/
+Canopy | https://www.canopytax.com/careers
+Owlet | https://owletcare.com/pages/careers
+Pattern | https://pattern.com/careers/
+Texas Instruments | https://careers.ti.com/
+Lucid Software | https://lucid.co/careers
+Filevine | https://www.filevine.com/careers/
+Nu Skin | https://www.nuskin.com/en_US/corporate/careers.html
+GoReact | https://goreact.com/careers/
+Fishbowl | https://www.fishbowlinventory.com/careers/
+Kiln | https://workatkiln.com/careers/
+Devmountain | https://devmountain.com/careers/
+TaxBit | https://taxbit.com/careers/
+Boostability | https://www.boostability.com/careers/
+Chatbooks | https://chatbooks.com/careers
+Bill (formerly Divvy) | https://www.bill.com/about-us/careers
+Gabb Wireless | https://gabb.com/careers/
+Whistic | https://www.whistic.com/about-whistic/careers
+nCino (formerly SimpleNexus) | https://www.ncino.com/careers
+Instructure | https://www.instructure.com/careers
+Pura | https://www.pura.com/pages/careers
+Blue Raven Solar | https://blueravensolar.com/careers/
+Aumni | https://www.aumni.fund/careers
+Cricut | https://careers.cricut.com/
+Purple | https://purple.com/careers
+Lendio | https://www.lendio.com/careers/
+ObservePoint | https://www.observepoint.com/careers/
+Solutionreach | https://www.solutionreach.com/careers
+Everee | https://www.everee.com/careers/
+Jane | https://jane.com/careers
+GuideCX | https://www.guidecx.com/careers/
+Awardco | https://www.awardco.com/careers
+Cinch | https://www.cinchshare.com/careers/
+Neighbor | https://www.neighbor.com/careers
+Breeze Airways | https://www.flybreeze.com/careers
+Vasion (formerly PrinterLogic) | https://www.vasion.com/careers
+Trinsic | https://trinsic.id/careers/
+Motivosity | https://www.motivosity.com/careers/
+Kickstart Fund | https://www.kickstartfund.com/careers/
+Klugonyx | https://www.klugonyx.com/careers
+MasterControl | https://www.mastercontrol.com/careers/
+Impartner | https://www.impartner.com/company/careers/
+TaskEasy | https://www.taskeasy.com/careers/
+Banyan | https://www.banyan.com/careers/
+Zonos | https://zonos.com/careers
+Gozney | https://www.gozney.com/careers/
+Crucial | https://www.crucial.com/careers
+Packsize | https://www.packsize.com/careers
+Kuali | https://www.kuali.co/careers
+Recursion | https://www.recursion.com/careers
+Swell | https://www.swellcx.com/careers
+Daxko | https://daxko.com/careers
+Zartico | https://www.zartico.com/careers
+Xant (formerly InsideSales) | https://www.xant.ai/careers
+Lander | https://www.landergear.com/careers
+Traeger Grills | https://www.traeger.com/careers
+Nav (formerly Nav.com) | https://www.nav.com/careers/
+Stance | https://www.stance.com/careers/
+Pluralsight | https://www.pluralsight.com/careers
+Health Catalyst | https://www.healthcatalyst.com/careers/
+Lucidpress (now Marq) | https://www.marq.com/careers
+DirectScale | https://directscale.com/careers/
+NICE CXone | https://www.nice.com/careers/
+Galileo Financial Technologies | https://www.galileo-ft.com/careers/
+Conservice | https://www.conservice.com/careers

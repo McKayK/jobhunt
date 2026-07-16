@@ -1,0 +1,41 @@
+services:
+  jobhunt:
+    build: .
+    container_name: jobhunt
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    volumes:
+      - jobhunt-data:/data
+    environment:
+      HOME_ZIP: "${HOME_ZIP:-84042}"
+      RADIUS_MILES: "${RADIUS_MILES:-30}"
+      INCLUDE_REMOTE: "${INCLUDE_REMOTE:-1}"
+      TITLE_INCLUDE: "${TITLE_INCLUDE:-}"
+      TITLE_EXCLUDE: "${TITLE_EXCLUDE:-intern,internship,vice president,chief }"
+      USER_AGENT: "${USER_AGENT:-jobhunt/0.1 (personal job search; contact: you@example.com)}"
+
+  # Windows has no host cron, so the schedule runs in its own container.
+  # It just calls the refresh endpoint on a timer. Postings only appear as
+  # fast as you poll, so REFRESH_EVERY_MINUTES is the freshness knob:
+  # 120 (default) checks every 2 hours. Don't go much below 60 — the
+  # aggregate sites throttle aggressive scrapers.
+  scheduler:
+    image: alpine:3.20
+    container_name: jobhunt-cron
+    restart: unless-stopped
+    depends_on:
+      - jobhunt
+    environment:
+      REFRESH_EVERY_MINUTES: "${REFRESH_EVERY_MINUTES:-120}"
+    command: >
+      sh -c "apk add --no-cache curl >/dev/null &&
+             echo 'scheduler up; refreshing every' $$REFRESH_EVERY_MINUTES 'minutes' &&
+             while true; do
+               echo \"[$$(date -u)] refreshing\";
+               curl -s -m 900 -X POST http://jobhunt:8081/api/refresh || echo 'refresh failed';
+               sleep $$(( REFRESH_EVERY_MINUTES * 60 ));
+             done"
+
+volumes:
+  jobhunt-data:

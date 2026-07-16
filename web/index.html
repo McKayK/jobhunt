@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Board</title>
+<style>
+  :root {
+    --ink:        #12161c;
+    --ink-2:      #4a5462;
+    --ink-3:      #79838f;
+    --paper:      #f7f6f3;
+    --card:       #ffffff;
+    --line:       #e2e0da;
+    --accent:     #1d5e4a;
+    --accent-dim: #e6f0eb;
+    --warn:       #8a5a00;
+    --star:       #b8860b;
+    --bad:        #9c2b2b;
+    --radius:     3px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+    padding: 10px 16px;
+  }
+  .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  h1 { font-size: 15px; margin: 0 8px 0 0; letter-spacing: -0.01em; font-weight: 650; }
+  .meta { color: var(--ink-3); font-size: 12px; margin-top: 4px; display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .spacer { flex: 1; }
+
+  .tabs { display: flex; gap: 2px; }
+  .tab {
+    padding: 5px 11px; border: 1px solid transparent; border-radius: var(--radius);
+    background: none; cursor: pointer; font: inherit; font-size: 13px; color: var(--ink-2);
+  }
+  .tab:hover { background: var(--paper); }
+  .tab.on { background: var(--ink); color: #fff; }
+  .tab .n { opacity: .65; margin-left: 5px; font-size: 11px; }
+
+  button.act {
+    padding: 5px 10px; border: 1px solid var(--line); border-radius: var(--radius);
+    background: var(--card); cursor: pointer; font: inherit; font-size: 13px; color: var(--ink);
+  }
+  button.act:hover:not(:disabled) { border-color: var(--ink-3); }
+  button.act:disabled { opacity: .5; cursor: default; }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.primary:hover:not(:disabled) { filter: brightness(1.12); }
+  button.danger { color: var(--bad); }
+
+  input[type=search], input[type=text], input[type=number], select {
+    padding: 5px 8px; border: 1px solid var(--line); border-radius: var(--radius);
+    font: inherit; font-size: 13px; background: var(--card); color: var(--ink);
+  }
+  input[type=search] { width: 200px; }
+
+  .loc-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border: 1px solid var(--line); border-radius: 14px;
+    background: var(--card); cursor: pointer; font-size: 12.5px; color: var(--ink-2);
+  }
+  .loc-chip:hover { border-color: var(--ink-3); color: var(--ink); }
+  .loc-chip b { color: var(--ink); font-weight: 600; }
+
+  main { padding: 12px 16px 80px; max-width: 1200px; }
+
+  /* Refresh progress */
+  #progress { display: none; margin-top: 6px; }
+  #progress.show { display: block; }
+  .pbar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .pbar > div { height: 100%; background: var(--accent); width: 0%; transition: width .3s; }
+  .pbar.indet > div { width: 30% !important; animation: slide 1.2s ease-in-out infinite; }
+  @keyframes slide { 0%{margin-left:-30%} 100%{margin-left:100%} }
+  .ptext { font-size: 12px; color: var(--ink-3); margin-top: 3px; }
+
+  .job {
+    display: grid;
+    grid-template-columns: 26px 1fr auto;
+    gap: 10px; align-items: start;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 3px solid transparent;
+    border-radius: var(--radius);
+    padding: 9px 12px; margin-bottom: 5px;
+  }
+  .job.unseen { border-left-color: var(--accent); }
+  .job.sel { background: #fffdf2; border-color: var(--star); }
+  .job.gone { opacity: .5; }
+  .job:hover { border-color: var(--ink-3); }
+  .job .t {
+    font-weight: 600; font-size: 14px; color: var(--ink);
+    text-decoration: none; letter-spacing: -0.005em;
+  }
+  .job .t:hover { text-decoration: underline; }
+  .job .sub { color: var(--ink-2); font-size: 12.5px; margin-top: 2px; }
+  .job .co { font-weight: 550; color: var(--ink); }
+  .dot { color: var(--line); margin: 0 5px; }
+
+  .pill {
+    display: inline-block; padding: 1px 6px; border-radius: 10px;
+    font-size: 11px; font-weight: 600; letter-spacing: .02em;
+  }
+  .pill.new    { background: var(--accent-dim); color: var(--accent); }
+  .pill.remote { background: #eef1f6; color: var(--ink-2); }
+  .pill.far    { background: #fdf3e3; color: var(--warn); }
+  .pill.unk    { background: #f0eeea; color: var(--ink-3); }
+  .pill.applied{ background: #e9e6f5; color: #4c3f8f; }
+  .chk { display:flex; align-items:center; gap:5px; font-size:13px; color:var(--ink-2); white-space:nowrap; cursor:pointer; }
+
+  .right { display: flex; gap: 4px; align-items: center; }
+  .ic {
+    border: none; background: none; cursor: pointer; padding: 3px 5px;
+    border-radius: var(--radius); color: var(--ink-3); font-size: 14px; line-height: 1;
+  }
+  .ic:hover { background: var(--paper); color: var(--ink); }
+  .ic.on { color: var(--star); }
+
+  .empty { text-align: center; padding: 60px 20px; color: var(--ink-3); }
+  .empty strong { display: block; color: var(--ink); font-size: 15px; margin-bottom: 6px; }
+
+  .toast {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: #fff; padding: 8px 14px; border-radius: var(--radius);
+    font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .18s; z-index: 60;
+  }
+  .toast.show { opacity: 1; }
+
+  .keys {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--card); border-top: 1px solid var(--line);
+    padding: 5px 16px; font-size: 11.5px; color: var(--ink-3);
+    display: flex; gap: 14px;
+  }
+  .keys kbd {
+    font-family: ui-monospace, monospace; background: var(--paper);
+    border: 1px solid var(--line); border-bottom-width: 2px;
+    border-radius: 3px; padding: 0 4px; color: var(--ink-2);
+  }
+
+  /* ---- Panels (settings / companies) ---- */
+  .scrim {
+    position: fixed; inset: 0; background: rgba(18,22,28,.35);
+    z-index: 40; display: none;
+  }
+  .scrim.show { display: block; }
+  .panel {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 420px; max-width: 95vw;
+    background: var(--card); border-left: 1px solid var(--line); z-index: 50;
+    transform: translateX(100%); transition: transform .18s ease-out;
+    display: flex; flex-direction: column;
+  }
+  .panel.show { transform: translateX(0); }
+  .panel-head {
+    padding: 14px 18px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-head h2 { margin: 0; font-size: 15px; }
+  .panel-body { padding: 16px 18px; overflow-y: auto; flex: 1; }
+  .panel-foot { padding: 12px 18px; border-top: 1px solid var(--line); display: flex; gap: 8px; }
+  .panel-foot .spacer { flex: 1; }
+
+  .field { margin-bottom: 16px; }
+  .field label.fl { display: block; font-size: 12px; font-weight: 600; color: var(--ink-2);
+                    margin-bottom: 5px; text-transform: uppercase; letter-spacing: .04em; }
+  .field .hint { font-size: 12px; color: var(--ink-3); margin-top: 4px; }
+  .row2 { display: flex; gap: 10px; }
+  .row2 > .field { flex: 1; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; border: 1px solid var(--line);
+           border-radius: var(--radius); padding: 6px; background: var(--card); cursor: text; }
+  .chips:focus-within { border-color: var(--ink-3); }
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--accent-dim); color: var(--accent);
+    border-radius: 11px; padding: 2px 8px; font-size: 12.5px; font-weight: 600;
+  }
+  .chips.neg .chip { background: #f7e8e8; color: var(--bad); }
+  .chip button { border: none; background: none; cursor: pointer; color: inherit;
+                 font-size: 13px; padding: 0; line-height: 1; opacity: .7; }
+  .chip button:hover { opacity: 1; }
+  .chips input { border: none; outline: none; flex: 1; min-width: 90px; font: inherit;
+                 font-size: 13px; background: transparent; padding: 2px; }
+
+  .src { display: flex; align-items: center; gap: 8px; padding: 7px 0;
+         border-bottom: 1px solid var(--paper); font-size: 13.5px; }
+  .src small { color: var(--ink-3); }
+  .src input { margin: 0; }
+
+  .co-row { display: flex; align-items: center; gap: 8px; padding: 7px 0;
+            border-bottom: 1px solid var(--paper); font-size: 13.5px; }
+  .co-row .nm { flex: 1; }
+  .co-row .nm small { color: var(--ink-3); display: block; font-size: 11.5px; }
+  .co-row .err { color: var(--bad); }
+
+  @media (max-width: 640px) {
+    .keys { display: none; }
+    input[type=search] { width: 120px; }
+    .job { grid-template-columns: 24px 1fr; }
+    .job .right { grid-column: 2; margin-top: 4px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <h1>Job Board</h1>
+    <div class="tabs" id="tabs"></div>
+    <div class="spacer"></div>
+    <input type="search" id="q" placeholder="Filter title, company…">
+    <button class="act" id="openSel" disabled>Open selected</button>
+    <button class="act" id="allSeen">Mark all seen</button>
+    <button class="act" id="companiesBtn" title="Manage tracked companies">Companies</button>
+    <button class="act" id="settingsBtn" title="Search settings">⚙ Settings</button>
+    <button class="act primary" id="refresh">Refresh</button>
+  </div>
+  <div class="meta">
+    <span class="loc-chip" id="locChip" title="Click to change">📍 <b id="locLabel">…</b></span>
+    <span id="status"></span>
+  </div>
+  <div id="progress"><div class="pbar"><div id="pfill"></div></div><div class="ptext" id="ptext"></div></div>
+</header>
+
+<main><div id="list"></div></main>
+
+<div class="keys">
+  <span><kbd>j</kbd>/<kbd>k</kbd> move</span>
+  <span><kbd>x</kbd> select</span>
+  <span><kbd>o</kbd> open</span>
+  <span><kbd>s</kbd> star</span>
+  <span><kbd>a</kbd> applied</span>
+  <span><kbd>e</kbd> seen</span>
+  <span><kbd>h</kbd> hide</span>
+  <span><kbd>O</kbd> open selected</span>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- Settings panel -->
+<div class="scrim" id="scrim"></div>
+<div class="panel" id="settingsPanel" role="dialog" aria-label="Settings">
+  <div class="panel-head"><h2>Search settings</h2>
+    <button class="ic" id="settingsClose" title="Close">✕</button></div>
+  <div class="panel-body">
+    <div class="row2">
+      <div class="field">
+        <label class="fl" for="sZip">Your ZIP code</label>
+        <input type="text" id="sZip" inputmode="numeric" maxlength="5" placeholder="84042" style="width:100%">
+        <div class="hint" id="zipHint"></div>
+      </div>
+      <div class="field">
+        <label class="fl" for="sRadius">Radius (miles)</label>
+        <input type="number" id="sRadius" min="1" max="500" step="1" style="width:100%">
+        <div class="hint">How far you're willing to commute</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="fl">Keywords to look for</label>
+      <div class="chips" id="incChips"><input id="incInput" placeholder="e.g. software engineer ⏎"></div>
+      <div class="hint">Job titles must contain at least one of these. Leave empty to see everything. Also used as the search terms on Indeed &amp; friends.</div>
+    </div>
+
+    <div class="field">
+      <label class="fl">Keywords to exclude</label>
+      <div class="chips neg" id="excChips"><input id="excInput" placeholder="e.g. intern ⏎"></div>
+      <div class="hint">Any job whose title contains one of these is hidden.</div>
+    </div>
+
+    <div class="field">
+      <label class="chk"><input type="checkbox" id="sRemote"> Include remote jobs</label>
+      <label class="chk" style="margin-top:6px"><input type="checkbox" id="sUnknown"> Include jobs whose location couldn't be pinpointed</label>
+    </div>
+
+    <div class="field">
+      <label class="fl">Where to search</label>
+      <label class="src"><input type="checkbox" id="srcBoards"> <span>Your tracked companies <small>— direct from their job boards (fast, most accurate)</small></span></label>
+      <label class="src"><input type="checkbox" id="srcIndeed"> <span>Indeed <small>— every company hiring in your radius</small></span></label>
+      <label class="src"><input type="checkbox" id="srcZip"> <span>ZipRecruiter <small>— broad coverage, some duplicates</small></span></label>
+      <label class="src"><input type="checkbox" id="srcGoogle"> <span>Google Jobs <small>— catches postings the others miss</small></span></label>
+      <label class="src"><input type="checkbox" id="sDiscover"> <span>Auto-discover companies <small>— when a job site finds a nearby company you don't track, detect its job board and start tracking it automatically</small></span></label>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label class="fl" for="sResults">Results per site / keyword</label>
+        <input type="number" id="sResults" min="10" max="1000" step="10" style="width:100%">
+      </div>
+      <div class="field">
+        <label class="fl" for="sHours">Max posting age</label>
+        <select id="sHours" style="width:100%">
+          <option value="24">1 day</option>
+          <option value="72">3 days</option>
+          <option value="168">1 week</option>
+          <option value="336">2 weeks</option>
+          <option value="720">30 days</option>
+          <option value="0">Any age</option>
+        </select>
+      </div>
+    </div>
+    <div class="hint" style="margin-top:-8px">Both apply only to Indeed / ZipRecruiter / Google searches.</div>
+  </div>
+  <div class="panel-foot">
+    <span class="hint" id="saveHint"></span>
+    <span class="spacer"></span>
+    <button class="act" id="settingsCancel">Cancel</button>
+    <button class="act primary" id="settingsSave">Save</button>
+  </div>
+</div>
+
+<!-- Companies panel -->
+<div class="panel" id="companiesPanel" role="dialog" aria-label="Companies">
+  <div class="panel-head"><h2>Tracked companies</h2>
+    <button class="ic" id="companiesClose" title="Close">✕</button></div>
+  <div class="panel-body">
+    <div class="field">
+      <label class="fl">Add a company</label>
+      <input type="text" id="coName" placeholder="Company name" style="width:100%; margin-bottom:6px">
+      <input type="text" id="coUrl" placeholder="Careers page URL (helps detection)" style="width:100%">
+      <div style="margin-top:8px; display:flex; gap:8px">
+        <button class="act primary" id="coAdd">Add</button>
+        <span class="hint" id="coHint" style="align-self:center"></span>
+      </div>
+      <div class="hint" style="margin-top:8px">Tracked companies are checked directly on every refresh — the most reliable feed. Companies you don't track still show up via the Indeed / ZipRecruiter search.</div>
+    </div>
+    <div id="coList"></div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+let state = { filter:'new', jobs:[], counts:{}, sel:new Set(), cur:0, cfg:{}, settings:null };
+
+const toast = (m) => {
+  const t = $('#toast'); t.textContent = m; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove('show'), 2400);
+};
+
+const api = async (url, opts) => {
+  const r = await fetch(url, opts);
+  if (!r.ok) throw new Error((await r.json().catch(()=>({}))).detail || r.statusText);
+  return r.json();
+};
+const jsonOpts = (method, body) =>
+  ({ method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+const post = (path, ids, value=true) => api('/api/'+path, jsonOpts('POST', {ids, value}));
+
+function ago(ts) {
+  if (!ts) return '';
+  const d = (Date.now() - new Date(ts.replace(' ','T')+'Z')) / 864e5;
+  if (d < 1) return 'today';
+  if (d < 2) return 'yesterday';
+  if (d < 30) return Math.floor(d) + 'd ago';
+  return Math.floor(d/30) + 'mo ago';
+}
+
+function distPill(j) {
+  if (j.remote) return '<span class="pill remote">remote</span>';
+  if (j.distance_miles == null) return '<span class="pill unk">distance ?</span>';
+  const cls = j.distance_miles > (state.cfg.radius_miles||30) ? 'far' : '';
+  return `<span class="pill ${cls}">${j.distance_miles.toFixed(0)} mi</span>`;
+}
+
+const esc = s => String(s??'').replace(/[&<>"]/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const find = id => state.jobs.find(j => j.id === id);
+
+function render() {
+  const TABS = [['new','New'],['all','All'],['starred','Starred'],
+                ['applied','Applied'],['gone','Expired']];
+  $('#tabs').innerHTML = TABS.map(([k,label]) => {
+    const n = state.counts[k==='all'?'all_':k] ?? 0;
+    return `<button class="tab ${state.filter===k?'on':''}" data-f="${k}">${label}<span class="n">${n}</span></button>`;
+  }).join('');
+  $('#tabs').querySelectorAll('.tab').forEach(b =>
+    b.onclick = () => { state.filter = b.dataset.f; state.cur = 0; load(); });
+
+  const list = $('#list');
+  if (!state.jobs.length) {
+    list.innerHTML = `<div class="empty"><strong>Nothing here</strong>
+      ${state.filter==='new' ? 'No new postings match your filters. Hit Refresh to search again, or widen your radius / keywords in ⚙ Settings.'
+                             : 'No jobs match this filter.'}</div>`;
+    $('#openSel').disabled = true;
+    return;
+  }
+
+  list.innerHTML = state.jobs.map((j,i) => `
+    <div class="job ${!j.seen_at?'unseen':''} ${state.sel.has(j.id)?'sel':''} ${j.gone_at?'gone':''}"
+         data-i="${i}" data-id="${j.id}">
+      <input type="checkbox" ${state.sel.has(j.id)?'checked':''} data-x="${j.id}"
+             aria-label="Select ${esc(j.title)}">
+      <div>
+        <a class="t" href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
+        <div class="sub">
+          <span class="co">${esc(j.company_name)}</span>
+          <span class="dot">•</span>${esc(j.location_raw||'—')}
+          <span class="dot">•</span>${ago(j.posted_at || j.first_seen_at)}
+          <span class="dot">•</span><span class="mono" style="font-size:11px">${esc(j.source)}</span>
+        </div>
+      </div>
+      <div class="right">
+        ${!j.seen_at ? '<span class="pill new">NEW</span>' : ''}
+        ${j.applied_at ? '<span class="pill applied">applied</span>' : ''}
+        ${distPill(j)}
+        <button class="ic ${j.starred?'on':''}" data-s="${j.id}" title="Star">${j.starred?'★':'☆'}</button>
+        <button class="ic" data-a="${j.id}" title="Mark applied">✓</button>
+        <button class="ic" data-h="${j.id}" title="Hide">✕</button>
+      </div>
+    </div>`).join('');
+
+  list.querySelectorAll('[data-x]').forEach(el => el.onclick = e => {
+    e.stopPropagation(); toggleSel(+el.dataset.x);
+  });
+  list.querySelectorAll('[data-s]').forEach(el => el.onclick = async e => {
+    e.stopPropagation(); const j = find(+el.dataset.s);
+    await post('jobs/star', [j.id], !j.starred); load();
+  });
+  list.querySelectorAll('[data-a]').forEach(el => el.onclick = async e => {
+    e.stopPropagation(); const j = find(+el.dataset.a);
+    await post('jobs/applied', [j.id], !j.applied_at);
+    toast(j.applied_at ? 'Applied cleared' : 'Marked applied'); load();
+  });
+  list.querySelectorAll('[data-h]').forEach(el => el.onclick = async e => {
+    e.stopPropagation(); await post('jobs/hide', [+el.dataset.h], true);
+    toast('Hidden'); load();
+  });
+  list.querySelectorAll('.t').forEach(el => el.onclick = () => {
+    const id = +el.closest('.job').dataset.id;
+    post('jobs/seen', [id], true).then(load);
+  });
+
+  $('#openSel').disabled = state.sel.size === 0;
+  $('#openSel').textContent = state.sel.size ? `Open ${state.sel.size} selected` : 'Open selected';
+  highlight();
+}
+
+function toggleSel(id) {
+  state.sel.has(id) ? state.sel.delete(id) : state.sel.add(id);
+  render();
+}
+
+function highlight() {
+  document.querySelectorAll('.job').forEach((el,i) =>
+    el.style.outline = i === state.cur ? '2px solid var(--ink)' : 'none');
+  const el = document.querySelector(`.job[data-i="${state.cur}"]`);
+  if (el) el.scrollIntoView({block:'nearest'});
+}
+
+async function load() {
+  const p = new URLSearchParams({ filter: state.filter, limit: 500 });
+  const q = $('#q').value.trim(); if (q) p.set('q', q);
+  try {
+    const data = await api('/api/jobs?' + p);
+    state.jobs = data.jobs; state.counts = data.counts; state.cfg = data.config;
+    const lr = data.last_run;
+    $('#locLabel').textContent =
+      `${data.config.home_place || data.config.home_zip} · ${Math.round(data.config.radius_miles)} mi`;
+    $('#status').textContent =
+      (lr?.finished_at ? `last refresh ${ago(lr.finished_at)}` : 'never refreshed — hit Refresh') +
+      (lr?.errors ? ' · some sources errored' : '');
+    state.cur = Math.min(state.cur, Math.max(0, state.jobs.length-1));
+    render();
+  } catch(e) { toast('Load failed: ' + e.message); }
+}
+
+/* ---------- Refresh with live progress ---------- */
+let pollT = null;
+async function pollProgress() {
+  try {
+    const s = await api('/api/refresh/status');
+    const box = $('#progress'), fill = $('#pfill'), text = $('#ptext');
+    if (s.running) {
+      box.classList.add('show');
+      const pct = s.total ? Math.round(100 * (s.done||0) / s.total) : 0;
+      box.querySelector('.pbar').classList.toggle('indet', !s.total);
+      fill.style.width = pct + '%';
+      text.textContent = (s.detail || 'Working…') +
+        (s.total ? ` (${s.done||0}/${s.total})` : '') +
+        (s.new ? ` · ${s.new} new so far` : '');
+      pollT = setTimeout(pollProgress, 800);
+    } else {
+      box.classList.remove('show');
+      const b = $('#refresh'); b.disabled = false; b.textContent = 'Refresh';
+      if (s.phase === 'done') {
+        toast(`Refresh done: ${s.new||0} new of ${s.found||0} found` +
+              (s.discovered ? ` · ${s.discovered} new compan${s.discovered===1?'y':'ies'} discovered` : '') +
+              (s.errors ? ` · ${s.errors} source(s) errored` : ''));
+      } else if (s.phase === 'error') {
+        toast('Refresh failed: ' + (s.detail||''));
+      }
+      await load();
+    }
+  } catch(e) { pollT = setTimeout(pollProgress, 1500); }
+}
+
+$('#refresh').onclick = async () => {
+  const b = $('#refresh');
+  try {
+    await api('/api/refresh', {method:'POST'});
+    b.disabled = true; b.textContent = 'Refreshing…';
+    pollProgress();
+  } catch(e) { toast(e.message); }
+};
+
+/* ---------- Settings panel ---------- */
+const panelShow = (id, show) => {
+  $('#scrim').classList.toggle('show', show);
+  $(id).classList.toggle('show', show);
+};
+
+function chipUI(boxSel, inputSel, items) {
+  const box = $(boxSel), input = $(inputSel);
+  const rerender = () => {
+    box.querySelectorAll('.chip').forEach(c => c.remove());
+    items.slice().reverse().forEach((kw, ri) => {
+      const i = items.length - 1 - ri;
+      const c = document.createElement('span');
+      c.className = 'chip';
+      c.innerHTML = `${esc(kw)} <button type="button" aria-label="Remove ${esc(kw)}">✕</button>`;
+      c.querySelector('button').onclick = () => { items.splice(i,1); rerender(); };
+      box.insertBefore(c, box.firstChild);
+    });
+  };
+  const commit = () => {
+    const v = input.value.trim().toLowerCase();
+    if (v && !items.includes(v)) { items.push(v); rerender(); }
+    input.value = '';
+  };
+  input.onkeydown = e => {
+    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); commit(); }
+    else if (e.key === 'Backspace' && !input.value && items.length) { items.pop(); rerender(); }
+  };
+  input.onblur = commit;
+  box.onclick = () => input.focus();
+  rerender();
+  return items;
+}
+
+let sInc = [], sExc = [];
+
+async function openSettings() {
+  const s = state.settings = await api('/api/settings');
+  $('#sZip').value = s.home_zip;
+  $('#zipHint').textContent = s.home_place || '';
+  $('#sRadius').value = s.radius_miles;
+  $('#sRemote').checked = s.include_remote;
+  $('#sUnknown').checked = s.keep_unknown;
+  $('#srcBoards').checked = s.use_company_boards;
+  $('#srcIndeed').checked = s.use_indeed;
+  $('#srcZip').checked = s.use_zip_recruiter;
+  $('#srcGoogle').checked = s.use_google;
+  $('#sDiscover').checked = s.auto_discover;
+  $('#sResults').value = s.results_per_site;
+  $('#sHours').value = String(s.aggregate_hours_old);
+  sInc = chipUI('#incChips', '#incInput', [...s.include_keywords]);
+  sExc = chipUI('#excChips', '#excInput', [...s.exclude_keywords]);
+  $('#saveHint').textContent = '';
+  panelShow('#settingsPanel', true);
+}
+
+$('#settingsBtn').onclick = openSettings;
+$('#locChip').onclick = openSettings;
+$('#settingsClose').onclick = $('#settingsCancel').onclick = () => panelShow('#settingsPanel', false);
+
+$('#sZip').oninput = () => { $('#zipHint').textContent = ''; };
+
+$('#settingsSave').onclick = async () => {
+  const btn = $('#settingsSave'); btn.disabled = true; btn.textContent = 'Saving…';
+  // Commit anything still typed into a chip box.
+  $('#incInput').blur(); $('#excInput').blur();
+  try {
+    const body = {
+      home_zip: $('#sZip').value.trim(),
+      radius_miles: parseFloat($('#sRadius').value) || 30,
+      include_remote: $('#sRemote').checked,
+      keep_unknown: $('#sUnknown').checked,
+      include_keywords: sInc,
+      exclude_keywords: sExc,
+      use_company_boards: $('#srcBoards').checked,
+      use_indeed: $('#srcIndeed').checked,
+      use_zip_recruiter: $('#srcZip').checked,
+      use_google: $('#srcGoogle').checked,
+      auto_discover: $('#sDiscover').checked,
+      results_per_site: parseInt($('#sResults').value) || 100,
+      aggregate_hours_old: parseInt($('#sHours').value),
+    };
+    const res = await api('/api/settings', jsonOpts('PUT', body));
+    panelShow('#settingsPanel', false);
+    toast(res.recomputed ? `Saved — ${res.recomputed} jobs re-measured from ${res.home_place||res.home_zip}` : 'Settings saved');
+    load();
+  } catch(e) {
+    $('#saveHint').textContent = e.message;
+  }
+  btn.disabled = false; btn.textContent = 'Save';
+};
+
+/* ---------- Companies panel ---------- */
+async function openCompanies() {
+  panelShow('#companiesPanel', true);
+  $('#coList').innerHTML = '<div class="hint">Loading…</div>';
+  const data = await api('/api/companies');
+  $('#coList').innerHTML = data.companies.map(c => `
+    <div class="co-row">
+      <div class="nm">${esc(c.name)}
+        <small>${esc(c.ats||'?')} · ${c.job_count} jobs${c.last_error ? ' · <span class="err">fetch error</span>' : ''}</small>
+      </div>
+      <button class="ic" data-del="${c.id}" title="Stop tracking">✕</button>
+    </div>`).join('') || '<div class="hint">No companies tracked yet.</div>';
+  $('#coList').querySelectorAll('[data-del]').forEach(el => el.onclick = async () => {
+    await api('/api/companies/' + el.dataset.del, {method:'DELETE'});
+    toast('Company removed'); openCompanies();
+  });
+}
+$('#companiesBtn').onclick = openCompanies;
+$('#companiesClose').onclick = () => panelShow('#companiesPanel', false);
+
+$('#coAdd').onclick = async () => {
+  const name = $('#coName').value.trim();
+  if (!name) return;
+  const btn = $('#coAdd'); btn.disabled = true; btn.textContent = 'Detecting…';
+  $('#coHint').textContent = '';
+  try {
+    const r = await api('/api/companies',
+      jsonOpts('POST', { name, careers_url: $('#coUrl').value.trim() || null }));
+    toast(`Added ${r.name} (${r.ats})`);
+    $('#coName').value = ''; $('#coUrl').value = '';
+    openCompanies();
+  } catch(e) { $('#coHint').textContent = e.message; }
+  btn.disabled = false; btn.textContent = 'Add';
+};
+
+$('#scrim').onclick = () => {
+  panelShow('#settingsPanel', false);
+  panelShow('#companiesPanel', false);
+};
+
+/* ---------- Bulk actions & keys ---------- */
+$('#allSeen').onclick = async () => {
+  const r = await api('/api/jobs/mark_all_seen', {method:'POST'});
+  toast(`${r.updated} marked seen`); load();
+};
+
+$('#openSel').onclick = async () => {
+  const ids = [...state.sel];
+  ids.forEach(id => window.open(find(id).url, '_blank', 'noopener'));
+  await post('jobs/seen', ids, true);
+  state.sel.clear(); toast(`Opened ${ids.length}`); load();
+};
+
+let qt; $('#q').oninput = () => { clearTimeout(qt); qt = setTimeout(load, 220); };
+
+document.onkeydown = async (e) => {
+  if (e.target.matches('input,select,textarea')) return;
+  if (e.key === 'Escape') { $('#scrim').onclick(); return; }
+  const j = state.jobs[state.cur];
+  const k = e.key;
+  if (k === 'j') { state.cur = Math.min(state.cur+1, state.jobs.length-1); highlight(); }
+  else if (k === 'k') { state.cur = Math.max(state.cur-1, 0); highlight(); }
+  else if (k === 'x' && j) { toggleSel(j.id); }
+  else if (k === 'o' && j) { window.open(j.url,'_blank','noopener'); await post('jobs/seen',[j.id]); load(); }
+  else if (k === 's' && j) { await post('jobs/star',[j.id], !j.starred); load(); }
+  else if (k === 'a' && j) { await post('jobs/applied',[j.id], !j.applied_at); load(); }
+  else if (k === 'e' && j) { await post('jobs/seen',[j.id], !j.seen_at); load(); }
+  else if (k === 'h' && j) { await post('jobs/hide',[j.id], true); load(); }
+  else if (k === 'O') { $('#openSel').click(); }
+  else return;
+  e.preventDefault();
+};
+
+load();
+// If a refresh was already running when the page opened, pick it up.
+api('/api/refresh/status').then(s => { if (s.running) { $('#refresh').disabled = true; $('#refresh').textContent='Refreshing…'; pollProgress(); } });
+</script>
+</body>
+</html>
