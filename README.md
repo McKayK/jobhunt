@@ -1,153 +1,178 @@
-# jobhunt
+# jobhunt — personal job board
 
-A personal job board. Searches every company hiring near your ZIP code —
-your tracked companies' boards directly, plus Indeed / ZipRecruiter / Google
-Jobs for everyone else — and shows you only what's new since you last looked.
+Pulls jobs from companies' own hiring systems and from the big job sites,
+filters them to your area (plus remote jobs open to anyone in the US),
+flags scams, scores every job against your resume, and tracks what you've
+applied to. Built for daily use by you and your family.
 
-## What's new in v2
+## What's new in v3
 
-- **Everything is configured in the UI now.** Click ⚙ Settings to set your
-  ZIP code, search radius, keywords to look for, and keywords to exclude.
-  No environment variables, no restarts.
-- **Finds any company, not just your list.** Indeed, ZipRecruiter, and Google
-  Jobs are searched around your ZIP (via [JobSpy](https://github.com/speedyapply/JobSpy)),
-  so a bakery two towns over that you've never heard of shows up too. Tracked
-  companies are still fetched straight from their own boards — that feed is
-  faster and more accurate, so keep your favorites on the list.
-- **Auto-discovery grows your list for you.** When an aggregate site finds an
-  in-range posting from a company you don't track, the refresh tries to detect
-  that company's job board (Greenhouse, Lever, Ashby, SmartRecruiters,
-  Workday) and, if a live board confirms, adds it to your tracked list
-  automatically. From then on that company is polled directly — near
-  real-time instead of waiting for Indeed to index it. Confirm-or-nothing, at
-  most 5 probes per refresh (configurable), misses retried monthly. Toggle it
-  in ⚙ Settings.
-- **Much faster.** Company boards are fetched in parallel instead of one at a
-  time, and locations are geocoded from an offline index of every US ZIP
-  (~1 ms) instead of a rate-limited web service (~1.1 s each). A first refresh
-  that used to take several minutes now takes seconds.
-- **Instant filter changes.** Keywords and radius are applied when you view
-  the board, not when jobs are fetched. Add an exclude keyword and the list
-  updates immediately. Widen your radius and jobs that were previously "too
-  far" appear without refetching. Change your ZIP and every stored job's
-  distance is re-measured on the spot.
-- **Live refresh progress.** The refresh runs in the background with a
-  progress bar, so the button doesn't freeze for a minute.
-- **Companies manager in the UI.** Add or remove tracked companies without
-  touching the CLI (the CLI still works).
+**More jobs, more of them from company sites**
+- **Apply-link discovery.** Indeed now hands back each employer's own apply
+  link (JobSpy 1.4). When that link points at a company's job board —
+  Greenhouse, Lever, Workday, Ashby, BambooHR, Workable, … — the company is
+  tracked automatically and its whole board is pulled straight from the
+  source from then on. This is the only automatic way to find **Workday**
+  companies (their addresses can't be guessed), so companies like Domo now
+  get picked up without you doing anything.
+- **9 hiring systems** read directly: Greenhouse, Lever, Ashby, SmartRecruiters,
+  Workday (both URL styles), plus new **Workable, BambooHR, Breezy, Recruitee**.
+  BambooHR is very common among Utah small/mid-size employers.
+- **Ashby fixed.** The old fetcher had silently started returning nothing
+  (Weave, Instructure and Jane showed 0 jobs). It now uses Ashby's public
+  posting API, with full descriptions and street addresses.
+- **LinkedIn and Glassdoor** available as optional sources.
+- **Job titles link to the company's own application page** when we know it,
+  with a small "via Indeed" link beside it.
+- **Starter company list** (36 verified Utah County employers) loads
+  automatically into an empty database, or any time from Companies → Import.
 
-## Try it on your laptop
+**Remote jobs anywhere in the US**
+- Your keywords are also searched US-wide, remote-only, on the job sites,
+  plus four remote-only boards (Himalayas, Jobicy, Remotive, Remote OK).
+- Remote jobs limited to other countries are dropped; ones limited to other
+  US states ("Remote – California residents") are kept out of view.
+
+**Scam & spam filter**
+- Every job gets a risk score with plain-English reasons: chat-app interviews,
+  check/equipment schemes, reshipping, task scams, upfront fees, SSN/bank
+  requests, personal email contacts, too-good pay, vague postings, employers
+  with no web presence, the same posting copied to many cities.
+- Employers' own anti-scam disclaimers ("we will never ask for your SSN")
+  don't count against them, and postings on a real company board get a big
+  trust bonus.
+- Likely scams move to a **Flagged** tab instead of disappearing. Staffing
+  agencies are tagged and can be hidden. Any company can be blocked.
+
+**Tracking what you applied to**
+- Opening a job no longer makes it vanish. It stays in the list (dimmed),
+  and when you come back to the tab, a small card asks **"Did you apply?"**
+  — Yes / Save for later / Not for me / Not yet.
+- **Recently viewed** tab: every job you opened in the last 30 days.
+- **Applications** tab with statuses (applied → interviewing → offer /
+  rejected / withdrawn) and notes per job.
+- Click any job for a detail panel: description, legitimacy check, resume
+  match, status, notes, links.
+
+**Your resume**
+- Upload your resume (PDF/Word/text). Every job gets a **match %** with the
+  skills you have and the ones it asks for — free, instant, no AI.
+- **Tailor resume** (optional AI): rewrites your resume for one posting using
+  only facts already in it, explains what changed, lists honest gaps and any
+  red flags in the posting, and downloads as a Word file (plus an optional
+  cover letter). Needs a Claude or Gemini API key.
+
+**Fixes**
+- Indeed jobs were being expired every refresh (absence from a capped search
+  ≠ closed). They now expire after 10 days unseen.
+- One company's board erroring no longer expires other companies' jobs.
+- Re-adding a company now fixes a wrong Workday address (the Domo bug).
+- Keyword filters match whole words: "intern" no longer hides "Internal Tools
+  Engineer" or "International".
+- Locations like "Lehi", "Salt Lake City (Hybrid)", "India - Pune" are now
+  understood offline (~190 jobs were stuck as "unknown").
+
+## Run it on your laptop
 
 ```bash
 pip install -r requirements.txt
-pip install python-jobspy --no-deps
-
 uvicorn app.server:app --port 8081
 # open http://127.0.0.1:8081
-# click ⚙ Settings, set your ZIP + radius + keywords, hit Refresh
 ```
 
-> **Why `--no-deps`?** python-jobspy pins `numpy==1.26.3`, which has no
-> prebuilt wheels for Python 3.13+ and fails to compile on machines without
-> a C toolchain (typical on Windows). jobspy runs fine on numpy 2.x, so
-> `requirements.txt` installs compatible versions of all of jobspy's
-> dependencies, and jobspy itself is installed without pulling its pins.
-> pip may print a warning about the numpy pin — it's safe to ignore.
+No more separate `pip install python-jobspy --no-deps` step: JobSpy 1.4.0
+dropped the old numpy pin and installs normally on Python 3.13.
 
-Optional CLI equivalents still exist:
+## Update the server (Windows 11 + Docker)
 
-```bash
-python -m app.cli init
-python -m app.cli add "Lucid Software" --url https://lucid.co/careers
-python -m app.cli add-batch companies.txt
-python -m app.cli refresh
-python -m app.cli jobs --new
-```
-
-## Settings (all in the UI)
-
-| Setting | What it does |
-|---|---|
-| ZIP code | Center of your search. Validated against a real US ZIP list; shows the city name so you know you typed it right. Changing it re-measures every stored job instantly. |
-| Radius | Miles from your ZIP. Applied at view time — widening it reveals already-fetched jobs immediately. |
-| Keywords to look for | Titles must contain at least one (empty = everything). Also used as the search terms sent to Indeed & friends. |
-| Keywords to exclude | Any title containing one of these is hidden. Instant. |
-| Include remote | Whether remote postings show up. |
-| Include unpinpointed | Postings whose location text couldn't be resolved ("5 Locations") are kept and flagged rather than silently lost. |
-| Where to search | Company boards / Indeed / ZipRecruiter / Google Jobs, each toggleable. |
-| Results per site, max age | Caps for the aggregate searches. |
-
-Environment variables from v1 (`HOME_ZIP`, `RADIUS_MILES`, `TITLE_INCLUDE`, …)
-still seed the *defaults* on a fresh database, but the UI owns them after that.
-
-## How the search works
-
-1. **Tracked companies** (Greenhouse, Lever, Ashby, SmartRecruiters, Workday)
-   are fetched in parallel straight from their public board APIs.
-2. **Aggregate sites** are searched around your ZIP within your radius, one
-   search per include-keyword (or one broad search if you have none).
-   In-range companies they surface that you don't track yet are candidates for
-   **auto-discovery**: their board is probed, and confirmed boards join your
-   tracked list and are fetched in the same refresh.
-3. Every posting's location is resolved offline against a bundled index of
-   ~43k US ZIP codes and city centroids. Only genuinely weird strings fall
-   back to Nominatim, rate-limited and budgeted (40/run) so they can never
-   stall a refresh.
-4. Postings are deduplicated by company + normalized title + canonical
-   location, so the same job found on a company's own board and on Indeed is
-   one row (the direct board's URL wins).
-5. Everything US-based is stored — including jobs outside your current radius —
-   with a computed distance. Filtering happens when you look at the board,
-   which is what makes settings changes instant. Foreign postings are dropped.
-
-## How "new" works
-
-`seen_at` is per-job and only set when you actually open or dismiss it. A
-refresh at 3am doesn't bury anything. Jobs that stop appearing get `gone_at`
-set rather than deleted, so your applied history survives; gone-marking is
-skipped for any refresh where half the sources errored.
-
-## Keyboard
-
-`j`/`k` move · `x` select · `o` open · `s` star · `a` applied · `e` seen ·
-`h` hide · `O` open all selected
-
-The point is `x x x O`: select the new ones, open them all in tabs, and
-they're marked seen on the way out.
-
-## Run on the Windows 11 server
+From `M:\docker\jobhunt` in **PowerShell**:
 
 ```powershell
+git pull
 docker compose up -d --build
 ```
 
-Then point your reverse proxy at `http://<server-ip>:8081`. The `scheduler`
-container refreshes every 2 hours by default; set `REFRESH_EVERY_MINUTES` in a
-`.env` file to tune it (60 is a sensible floor — the aggregate sites throttle
-aggressive polling). Fresh postings can only appear as fast as you poll. Data
-lives in the `jobhunt-data` volume, so rebuilds keep your history, seen flags,
-applied marks, and settings.
+Your data lives in the `jobhunt_jobhunt-data` volume, so it survives
+rebuilds. On first start the app upgrades the database by itself (new
+columns, re-classifies locations, scores every job) — takes a few seconds.
 
-Back it up with:
+Then in the app: **Resume → Add resume** (upload your PDF), and optionally
+paste an AI key there.
 
-```powershell
-docker run --rm -v jobhunt-data:/data -v ${PWD}:/backup alpine tar czf /backup/jobhunt-backup.tar.gz /data
+**One-time git cleanup.** `data/` is now in `.gitignore`, but if a database
+was committed earlier, git still tracks it — that's how the server once ended
+up with a stale database. On the laptop, run once:
+
+```bash
+git rm -r --cached data
+git commit -m "Stop tracking the database"
 ```
 
-## Notes on the aggregate sites
+This only removes it from git; your local file stays.
 
-Indeed / ZipRecruiter / Google don't have public APIs; JobSpy scrapes their
-public search pages. That works well for personal daily use, but a site may
-occasionally throttle or block a request — those show up as source errors in
-the status line, and the refresh carries on with everything else. LinkedIn and
-Glassdoor are intentionally not enabled: they block scrapers aggressively and
-mostly duplicate Indeed's listings.
+## Getting the most out of it
+
+- **Keywords are your search terms.** They drive what Indeed, LinkedIn and
+  the remote boards return. A wider set finds more: `developer`, `engineer`,
+  `software`, `web`, `full stack`, `frontend`, `backend`, `qa`, and for IT
+  roles `it support`, `help desk`, `technician`, `systems administrator`.
+- **Exclude keywords are whole words now**, so they're safer to use.
+- **Sort by "Best match"** once your resume is in.
+- **Find job board** (Companies panel) for any company you're curious about:
+  it checks their postings' apply links, their website, likely board
+  addresses on 9 systems, a web search, and AI search if you've added a key.
+  If they use a system the app can't read (iCIMS, Paylocity, UKG, …), you
+  still get the link.
+
+## AI keys (optional)
+
+Only resume tailoring and the last step of "Find job board" use AI.
+
+- **Claude**: create a key at console.anthropic.com. Uses `claude-sonnet-5-5`
+  — roughly 4–5¢ per tailored resume.
+- **Gemini**: create a key at aistudio.google.com (has a free tier). Uses
+  `gemini-3.8-flash`.
+
+Paste a key in **Resume → AI**, or set `ANTHROPIC_API_KEY` / `GEMINI_API_KEY`
+in `.env` for docker compose (an environment key always wins). Override
+models with `ANTHROPIC_MODEL` / `GEMINI_MODEL`.
+
+The app has no login, so anyone who can reach it can use your AI key. Keep it
+on your LAN/VPN or behind your reverse proxy's access list.
+
+## How the search works
+
+1. **Tracked company boards** are fetched in parallel straight from their
+   public APIs. A board that answers is complete, so its missing jobs closed.
+2. **Job sites** are searched around your ZIP, one search per keyword, and
+   (with "anywhere in the US" on) again nationwide for remote-only jobs.
+3. **Remote boards** are checked on their own polite schedule (Remotive and
+   Remote OK at most every 6 hours, as their terms ask).
+4. **Auto-discovery** turns job-site apply links into tracked boards (up to 25
+   checks per refresh), then tries name-guessing for up to 10 more nearby
+   companies. Only boards that answer with live jobs are added.
+5. **Housekeeping**: expire stale job-site postings, run the scam filter,
+   score matches against your resume.
+
+Locations resolve offline from a bundled index of ~43k US ZIP codes;
+Nominatim is only a capped fallback. Filters apply when you view the board,
+so changing ZIP/radius/keywords is instant.
+
+## Keyboard
+
+`j`/`k` move · `Enter` details · `o` open · `a` applied · `s` star ·
+`h` hide · `x` select · `O` open selected · `e` toggle seen · `/` search ·
+`Esc` close
 
 ## Tests
 
 ```bash
-python test_v2.py        # v2: offline geo, settings, pipeline, query filters
-python test_core.py      # hashing, dedupe, state preservation
-python test_fetchers.py  # ATS parsing against fixtures
+python test_v3.py      # new sources, discovery, scam filter, matching, tracking, tailoring
+python test_v2.py      # geocoding, settings, refresh pipeline, query-time filters
+python test_core.py    # identity/dedupe, user-state preservation, expiry
+python test_fetchers.py
+python test_api.py
+python test_discovery.py
 ```
-# jobhunt
+
+All tests use a temporary database and mock every network call.

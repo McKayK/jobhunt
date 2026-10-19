@@ -161,7 +161,7 @@ ok("Discovery candidates in-range only",
 ok("Discovery ranks by posting count", names[0] == "Wasatch Widgets Inc")
 ok("Discovery carries company_url", cands[0][1] == "https://wasatchwidgets.com")
 
-def fake_detect(name, careers_url=None, probe=True):
+def fake_detect(name, careers_url=None, probe=True, **kw):
     if "Wasatch" in name:
         return detect.Detection("greenhouse", "wasatchwidgets", confidence="medium")
     return detect.Detection("unknown", None, confidence="low")

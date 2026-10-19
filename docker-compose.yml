@@ -13,7 +13,11 @@ services:
       INCLUDE_REMOTE: "${INCLUDE_REMOTE:-1}"
       TITLE_INCLUDE: "${TITLE_INCLUDE:-}"
       TITLE_EXCLUDE: "${TITLE_EXCLUDE:-intern,internship,vice president,chief }"
-      USER_AGENT: "${USER_AGENT:-jobhunt/0.1 (personal job search; contact: you@example.com)}"
+      USER_AGENT: "${USER_AGENT:-jobhunt/0.3 (personal job search; contact: you@example.com)}"
+      # Optional AI for resume tailoring. You can also paste keys in the app
+      # (Resume -> AI); a key set here always wins.
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
 
   # Windows has no host cron, so the schedule runs in its own container.
   # It just calls the refresh endpoint on a timer. Postings only appear as

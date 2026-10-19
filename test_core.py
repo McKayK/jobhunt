@@ -111,9 +111,18 @@ print("\n=== Gone detection ===")
 import time
 time.sleep(1.1)
 future = db.now_iso()
-n = db.mark_gone(conn, "greenhouse", future)
+cid = db.add_company(conn, "Acme Corp", None, "greenhouse", "acme")
+other = db.add_company(conn, "Other Co", None, "greenhouse", "otherco")
+conn.execute("UPDATE jobs SET company_id = ?", (cid,))
+conn.commit()
+db.mark_gone_company(conn, other, future)          # a different board: no effect
 row = conn.execute("SELECT gone_at FROM jobs").fetchone()
-print(f"[{'PASS' if row['gone_at'] is not None else 'FAIL'}] Job absent from new run flagged gone")
+ok = row["gone_at"] is None
+print(f"[{'PASS' if ok else 'FAIL'}] Another company's run doesn't expire this job")
+fails += not ok
+n = db.mark_gone_company(conn, cid, future)
+row = conn.execute("SELECT gone_at FROM jobs").fetchone()
+print(f"[{'PASS' if row['gone_at'] is not None else 'FAIL'}] Job absent from its company's new run flagged gone")
 
 # Reappearing job clears gone_at.
 db.upsert_job(conn, job_gh)

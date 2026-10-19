@@ -159,7 +159,7 @@ def cmd_verify(args):
     conn = db.connect()
     db.init_db(conn)
     rows = conn.execute(
-        "SELECT * FROM companies WHERE active = 1 AND slug IS NOT NULL ORDER BY name"
+        "SELECT * FROM companies WHERE active = 1 AND slug IS NOT NULL AND ats != 'link' ORDER BY name"
     ).fetchall()
 
     good, bad = [], []
@@ -193,7 +193,7 @@ def cmd_prune(args):
     conn = db.connect()
     db.init_db(conn)
     rows = conn.execute(
-        "SELECT * FROM companies WHERE active = 1 AND slug IS NOT NULL"
+        "SELECT * FROM companies WHERE active = 1 AND slug IS NOT NULL AND ats != 'link'"
     ).fetchall()
 
     bad = []
@@ -288,7 +288,7 @@ def cmd_recheck(args):
     conn = db.connect()
     db.init_db(conn)
     rows = conn.execute(
-        "SELECT * FROM companies WHERE active = 1 AND slug IS NOT NULL ORDER BY name"
+        "SELECT * FROM companies WHERE active = 1 AND slug IS NOT NULL AND ats != 'link' ORDER BY name"
     ).fetchall()
 
     dead = []

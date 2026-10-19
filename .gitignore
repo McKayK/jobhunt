@@ -1,0 +1,9 @@
+# Your database (jobs, applied marks, resumes, saved API keys) — never commit.
+data/
+*.db
+*.db-wal
+*.db-shm
+.env
+__pycache__/
+*.pyc
+.pytest_cache/

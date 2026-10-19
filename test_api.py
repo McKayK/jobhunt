@@ -96,7 +96,7 @@ check(len(r["jobs"]) == 1, "Star filter works")
 # Applied implies seen
 jid2 = [j for j in all_jobs if j["title"] == "DevOps Engineer"][0]["id"]
 c.post("/api/jobs/applied", json={"ids": [jid2], "value": True})
-r = c.get("/api/jobs?filter=applied").json()
+r = c.get("/api/jobs?filter=applications").json()
 check(len(r["jobs"]) == 1, "Applied filter works")
 check(r["jobs"][0]["seen_at"] is not None, "Applying implies seen")
 

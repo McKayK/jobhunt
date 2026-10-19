@@ -1,7 +1,8 @@
 """Validate fetcher parsing using fixtures shaped like the real API responses."""
 import sys, json
 from unittest import mock
-sys.path.insert(0, "/home/claude/jobhunt")
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app.fetchers import ats
 
@@ -23,10 +24,18 @@ LEVER = [
      "descriptionPlain": "React work.", "createdAt": 1752000000000},
 ]
 
-ASHBY = {"data": {"jobBoard": {"jobPostings": [
-    {"id": "abc-123", "title": "Platform Engineer", "locationName": "Salt Lake City, UT",
-     "employmentType": "FullTime", "publishedAt": "2026-07-11T12:00:00.000Z"},
-]}}}
+# Shape captured from the live posting API (api.ashbyhq.com/posting-api/job-board/weave).
+ASHBY = {"apiVersion": "1", "jobs": [
+    {"id": "abc-123", "title": "Platform Engineer", "location": "Initrode - HQ (Lehi, UT)",
+     "address": {"postalAddress": {"addressCountry": "United States", "addressLocality": "Lehi",
+                                   "addressRegion": "Utah", "postalCode": "84043"}},
+     "secondaryLocations": [], "isListed": True, "isRemote": None, "workplaceType": None,
+     "employmentType": "FullTime", "publishedAt": "2026-07-11T12:00:00.000+00:00",
+     "jobUrl": "https://jobs.ashbyhq.com/initrode/abc-123",
+     "applyUrl": "https://jobs.ashbyhq.com/initrode/abc-123/application",
+     "descriptionPlain": "Build the platform.", "compensation": {"compensationTierSummary": "$100K – $130K"}},
+    {"id": "hidden-1", "title": "Unlisted", "isListed": False, "jobUrl": "https://x"},
+]}
 
 SR = {"content": [
     {"id": "p1", "name": "QA Engineer",
@@ -65,8 +74,11 @@ assert gh[0]["posted_at"] == "2026-07-12 14:30:00", f"TZ convert failed: {gh[0][
 lv = test("lever", lambda: ats.fetch_lever("Globex", "globex"), LEVER)
 assert lv[0]["posted_at"] is not None, "epoch millis parse failed"
 
-ab = test("ashby", lambda: ats.fetch_ashby("Initrode", "initrode"), ASHBY, post=True)
+ab = test("ashby", lambda: ats.fetch_ashby("Initrode", "initrode"), ASHBY)
+assert len(ab) == 1, "unlisted Ashby job should be skipped"
 assert ab[0]["url"].endswith("/initrode/abc-123"), f"url build failed: {ab[0]['url']}"
+assert ab[0]["location_raw"] == "Lehi, Utah", f"structured address not used: {ab[0]['location_raw']}"
+assert ab[0]["salary_text"] == "$100K – $130K"
 
 sr = test("smartrecruiters", lambda: ats.fetch_smartrecruiters("Initech", "Initech"), SR)
 assert sr[0]["location_raw"] == "Draper, UT, us", f"loc join failed: {sr[0]['location_raw']}"

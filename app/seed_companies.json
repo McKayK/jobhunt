@@ -1,0 +1,234 @@
+[
+ {
+  "name": "Adobe",
+  "careers_url": "https://adobe.wd5.myworkdayjobs.com/en-US/external_experienced",
+  "ats": "workday",
+  "slug": "adobe",
+  "workday_host": "adobe.wd5.myworkdayjobs.com",
+  "workday_path": "/en-US/external_experienced"
+ },
+ {
+  "name": "Awardco",
+  "careers_url": "https://www.awardco.com/careers",
+  "ats": "greenhouse",
+  "slug": "awardco"
+ },
+ {
+  "name": "Blue Raven Solar",
+  "careers_url": "https://blueravensolar.com/careers/",
+  "ats": "smartrecruiters",
+  "slug": "blueravensolar"
+ },
+ {
+  "name": "Breeze Airways",
+  "careers_url": "https://www.flybreeze.com/careers",
+  "ats": "greenhouse",
+  "slug": "breezeairways"
+ },
+ {
+  "name": "Canopy",
+  "careers_url": "https://www.canopytax.com/careers",
+  "ats": "greenhouse",
+  "slug": "canopytax"
+ },
+ {
+  "name": "Chatbooks",
+  "careers_url": "https://chatbooks.com/careers",
+  "ats": "greenhouse",
+  "slug": "chatbooks"
+ },
+ {
+  "name": "Cricut",
+  "careers_url": "https://careers.cricut.com/",
+  "ats": "smartrecruiters",
+  "slug": "cricut"
+ },
+ {
+  "name": "Domo",
+  "careers_url": "https://domo.wd12.myworkdayjobs.com/DomoCareers",
+  "ats": "workday",
+  "slug": "domo",
+  "workday_host": "domo.wd12.myworkdayjobs.com",
+  "workday_path": "/DomoCareers"
+ },
+ {
+  "name": "Entrata",
+  "careers_url": "https://www.entrata.com/careers",
+  "ats": "lever",
+  "slug": "entrata"
+ },
+ {
+  "name": "Filevine",
+  "careers_url": "https://www.filevine.com/careers/",
+  "ats": "lever",
+  "slug": "filevine"
+ },
+ {
+  "name": "GC Ai",
+  "careers_url": "https://gc.ai/company/careers#openings",
+  "ats": "ashby",
+  "slug": "gc-ai"
+ },
+ {
+  "name": "Gabb Wireless",
+  "careers_url": "https://gabb.com/careers/",
+  "ats": "lever",
+  "slug": "gabbwireless"
+ },
+ {
+  "name": "Instructure",
+  "careers_url": "https://www.instructure.com/careers",
+  "ats": "ashby",
+  "slug": "instructure"
+ },
+ {
+  "name": "Jane",
+  "careers_url": "https://jane.com/careers",
+  "ats": "ashby",
+  "slug": "jane"
+ },
+ {
+  "name": "Lendio",
+  "careers_url": "https://www.lendio.com/careers/",
+  "ats": "workday",
+  "slug": "lendio",
+  "workday_host": "lendio.wd1.myworkdayjobs.com",
+  "workday_path": "/lendio"
+ },
+ {
+  "name": "Lucid Software",
+  "careers_url": "https://lucid.co/careers",
+  "ats": "greenhouse",
+  "slug": "lucidsoftware"
+ },
+ {
+  "name": "MasterControl",
+  "careers_url": "https://www.mastercontrol.com/careers/",
+  "ats": "greenhouse",
+  "slug": "mastercontrol"
+ },
+ {
+  "name": "NICE CXone",
+  "careers_url": "https://www.nice.com/careers/",
+  "ats": "greenhouse",
+  "slug": "nice"
+ },
+ {
+  "name": "Neighbor",
+  "careers_url": "https://www.neighbor.com/careers",
+  "ats": "lever",
+  "slug": "neighbor"
+ },
+ {
+  "name": "NetDocuments",
+  "careers_url": "https://job-boards.greenhouse.io/netdocuments",
+  "ats": "greenhouse",
+  "slug": "netdocuments"
+ },
+ {
+  "name": "Packsize",
+  "careers_url": "https://www.packsize.com/careers",
+  "ats": "workday",
+  "slug": "packsize",
+  "workday_host": "packsize.wd108.myworkdayjobs.com",
+  "workday_path": "/Packsize_Careers"
+ },
+ {
+  "name": "Pattern",
+  "careers_url": "https://pattern.com/careers/",
+  "ats": "lever",
+  "slug": "pattern"
+ },
+ {
+  "name": "Pluralsight",
+  "careers_url": "https://pluralsight.wd1.myworkdayjobs.com/en-US/Pluralsight_Careers",
+  "ats": "workday",
+  "slug": "pluralsight",
+  "workday_host": "pluralsight.wd1.myworkdayjobs.com",
+  "workday_path": "/en-US/Careers"
+ },
+ {
+  "name": "Podium",
+  "careers_url": "https://www.podium.com/careers/",
+  "ats": "greenhouse",
+  "slug": "podium81"
+ },
+ {
+  "name": "Purple",
+  "careers_url": "https://purple.com/careers",
+  "ats": "workday",
+  "slug": "purple",
+  "workday_host": "purple.wd1.myworkdayjobs.com",
+  "workday_path": "/purplecareers"
+ },
+ {
+  "name": "Qualtrics",
+  "careers_url": "https://www.qualtrics.com/careers/",
+  "ats": "greenhouse",
+  "slug": "qualtrics"
+ },
+ {
+  "name": "Recursion",
+  "careers_url": "https://www.recursion.com/careers",
+  "ats": "greenhouse",
+  "slug": "recursionpharmaceuticals"
+ },
+ {
+  "name": "Route",
+  "careers_url": "https://route.com/careers",
+  "ats": "greenhouse",
+  "slug": "route"
+ },
+ {
+  "name": "TaskEasy",
+  "careers_url": "https://www.taskeasy.com/careers/",
+  "ats": "lever",
+  "slug": "workwave"
+ },
+ {
+  "name": "TaxBit",
+  "careers_url": "https://taxbit.com/careers/",
+  "ats": "greenhouse",
+  "slug": "taxbit"
+ },
+ {
+  "name": "Traeger Grills",
+  "careers_url": "https://www.traeger.com/careers",
+  "ats": "greenhouse",
+  "slug": "traeger"
+ },
+ {
+  "name": "Trove",
+  "careers_url": "https://trovebrands.com/pages/careers",
+  "ats": "greenhouse",
+  "slug": "trovebrands"
+ },
+ {
+  "name": "Vivint",
+  "careers_url": "https://www.vivint.com/company/careers",
+  "ats": "smartrecruiters",
+  "slug": "vivint"
+ },
+ {
+  "name": "Waystar",
+  "careers_url": "https://waystar.wd1.myworkdayjobs.com/en-US/Waystar",
+  "ats": "workday",
+  "slug": "waystar",
+  "workday_host": "waystar.wd1.myworkdayjobs.com",
+  "workday_path": "/en-US/Waystar"
+ },
+ {
+  "name": "Weave",
+  "careers_url": "https://www.getweave.com/careers/",
+  "ats": "ashby",
+  "slug": "weave"
+ },
+ {
+  "name": "eBay",
+  "careers_url": "https://ebay.wd5.myworkdayjobs.com/en-US/apply",
+  "ats": "workday",
+  "slug": "ebay",
+  "workday_host": "ebay.wd5.myworkdayjobs.com",
+  "workday_path": "/apply"
+ }
+]
