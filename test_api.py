@@ -45,6 +45,9 @@ def check(cond, label):
     fails += not cond
     print(f"[{'PASS' if cond else 'FAIL'}] {label}")
 
+# Seed dates are fixed; this test is about radius/sorting, not posting age.
+c.put("/api/settings", json={"aggregate_hours_old": 0})
+
 r = c.get("/api/jobs?filter=new").json()
 # Default radius is 30mi, so the 290mi Boise job is filtered out at view time.
 check(len(r["jobs"]) == 4, f"4 of 5 seeded jobs shown at 30mi (got {len(r['jobs'])})")

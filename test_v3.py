@@ -396,6 +396,16 @@ with TestClient(server.app) as c:
     det = c.get(f"/api/jobs/{jid}?fetch=false").json()
     ok("Job detail with notes", det["notes"] == "Talked to Sam" and det["applied_at"])
 
+    # Max posting age applies to every source, at view time.
+    conn.execute("UPDATE jobs SET posted_at = datetime('now', '-10 days') WHERE title = 'Frontend Developer'")
+    conn.commit()
+    settings.set_many(conn, {"aggregate_hours_old": 72})
+    titles = {j["title"] for j in c.get("/api/jobs?filter=all").json()["jobs"]}
+    ok("Old company-board posting hidden by max age", "Frontend Developer" not in titles)
+    settings.set_many(conn, {"aggregate_hours_old": 0})
+    titles = {j["title"] for j in c.get("/api/jobs?filter=all").json()["jobs"]}
+    ok("'Any age' shows it again", "Frontend Developer" in titles)
+
     c.post("/api/block", json={"company": "Nation Co"})
     titles = {j["title"] for j in c.get("/api/jobs?filter=all").json()["jobs"]}
     ok("Blocked company hidden", "Remote Web Developer" not in titles)

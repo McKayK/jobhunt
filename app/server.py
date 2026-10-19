@@ -120,6 +120,17 @@ def _quality_clauses(cfg: dict, where: list, params: list, risky: bool = False):
         where.append("j.is_staffing = 0")
 
 
+def _age_clause(cfg: dict, where: list, params: list):
+    """Max posting age, for every source. Company boards return all open
+    jobs however old (Lever postings averaged 220 days), so filtering only
+    the Indeed search wasn't enough. Jobs without a posted date are aged
+    from when we first saw them."""
+    hours = cfg.get("aggregate_hours_old") or 0
+    if hours > 0:
+        where.append("COALESCE(j.posted_at, j.first_seen_at) >= datetime('now', ?)")
+        params.append(f"-{int(hours)} hours")
+
+
 TABS = {
     # name: (where, discovery filters?, risky-only?)
     "new":          ("j.seen_at IS NULL AND j.hidden = 0 AND j.gone_at IS NULL", True, False),
@@ -156,6 +167,7 @@ def _where_for(tab: str, cfg: dict, q: Optional[str], company: Optional[str],
         _keyword_clauses(cfg, where, params)
         _distance_clauses(cfg, where, params)
         _quality_clauses(cfg, where, params, risky=risky)
+        _age_clause(cfg, where, params)
     if q:
         where.append("(j.title LIKE ? OR j.company_name LIKE ? OR j.location_raw LIKE ?)")
         params += [f"%{q}%"] * 3

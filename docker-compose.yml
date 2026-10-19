@@ -20,10 +20,9 @@ services:
       GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
 
   # Windows has no host cron, so the schedule runs in its own container.
-  # It just calls the refresh endpoint on a timer. Postings only appear as
-  # fast as you poll, so REFRESH_EVERY_MINUTES is the freshness knob:
-  # 120 (default) checks every 2 hours. Don't go much below 60 — the
-  # aggregate sites throttle aggressive scrapers.
+  # It calls the refresh endpoint at fixed local times. Default: 8 AM and
+  # 8 PM Mountain, so the freshest batch is waiting each morning. Change
+  # REFRESH_TIMES (24h HH:MM, comma-separated) and TZ in .env.
   scheduler:
     image: alpine:3.20
     container_name: jobhunt-cron
@@ -31,14 +30,24 @@ services:
     depends_on:
       - jobhunt
     environment:
-      REFRESH_EVERY_MINUTES: "${REFRESH_EVERY_MINUTES:-120}"
+      REFRESH_TIMES: "${REFRESH_TIMES:-08:00,20:00}"
+      TZ: "${TZ:-America/Denver}"
     command: >
-      sh -c "apk add --no-cache curl >/dev/null &&
-             echo 'scheduler up; refreshing every' $$REFRESH_EVERY_MINUTES 'minutes' &&
+      sh -c "apk add --no-cache curl tzdata >/dev/null;
+             echo \"scheduler up: refreshing at $$REFRESH_TIMES ($$TZ), now $$(date)\";
+             last='';
              while true; do
-               echo \"[$$(date -u)] refreshing\";
-               curl -s -m 900 -X POST http://jobhunt:8081/api/refresh || echo 'refresh failed';
-               sleep $$(( REFRESH_EVERY_MINUTES * 60 ));
+               now=$$(date +%H:%M);
+               case \",$$REFRESH_TIMES,\" in
+                 *\",$$now,\"*)
+                   if [ \"$$now\" != \"$$last\" ]; then
+                     echo \"[$$(date)] refreshing\";
+                     curl -s -m 60 -X POST http://jobhunt:8081/api/refresh || echo 'refresh failed';
+                     echo;
+                     last=$$now;
+                   fi;;
+               esac;
+               sleep 20;
              done"
 
 volumes:

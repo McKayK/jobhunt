@@ -67,6 +67,10 @@ applied to. Built for daily use by you and your family.
   ≠ closed). They now expire after 10 days unseen.
 - One company's board erroring no longer expires other companies' jobs.
 - Re-adding a company now fixes a wrong Workday address (the Domo bug).
+- **Max posting age now applies to every source.** It used to limit only the
+  Indeed search; company boards return every open job however old (Lever
+  postings averaged 220 days). It's now applied when you view the board —
+  instant to change, like the other filters.
 - Keyword filters match whole words: "intern" no longer hides "Internal Tools
   Engineer" or "International".
 - Locations like "Lehi", "Salt Lake City (Hybrid)", "India - Pune" are now
@@ -91,6 +95,11 @@ From `M:\docker\jobhunt` in **PowerShell**:
 git pull
 docker compose up -d --build
 ```
+
+The scheduler container refreshes at **8 AM and 8 PM Mountain** so the
+freshest batch is waiting each morning. Change it in `.env`
+(`REFRESH_TIMES=08:00,20:00`, `TZ=America/Denver`) and run
+`docker compose up -d`. You can always hit Refresh by hand too.
 
 Your data lives in the `jobhunt_jobhunt-data` volume, so it survives
 rebuilds. On first start the app upgrades the database by itself (new

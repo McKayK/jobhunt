@@ -40,7 +40,9 @@ DEFAULTS: dict[str, tuple[type, Any]] = {
     "use_remote_boards":  (bool, True),
     # How many results to ask each job site for, per search term.
     "results_per_site":   (int,  100),
-    # Only pull job-site postings newer than this many hours (0 = no limit).
+    # Max posting age in hours (0 = no limit). Hides older postings from every
+    # source when viewing, and also limits the job-site searches. (Key name
+    # kept from v2 so existing choices carry over.)
     "aggregate_hours_old": (int, 336),   # two weeks
     # Job-site postings no search has returned for this many days are expired.
     "aggregate_expire_days": (int, 10),
